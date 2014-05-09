@@ -1,0 +1,15 @@
+{
+  "name": "Karteczki",
+  "version": "0.0.1",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Michał Skałkowski <mskalkowski@inf.ug.edu.pl>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "3.x",
+    "socket.io": "^0.9.16"
+  }
+}
