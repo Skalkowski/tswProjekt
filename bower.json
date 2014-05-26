@@ -1,8 +1,8 @@
 {
-  "name": "Karteczki",
-  "version": "0.0.1",
+  "name": "angular_chat",
+  "version": "0.1.0",
   "authors": [
-    "Michał Skałkowski <mskalkowski@inf.ug.edu.pl>"
+    "Wiesław Pawłowski <w.pawlowski@inf.ug.edu.pl>"
   ],
   "license": "MIT",
   "private": true,

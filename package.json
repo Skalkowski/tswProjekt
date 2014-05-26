@@ -1,15 +1,20 @@
 {
-  "name": "Karteczki",
-  "version": "0.0.1",
-  "description": "",
-  "main": "app.js",
+  "name": "sio-auth",
+  "version": "0.0.0",
+  "description": "Uwierzytelnianie w Socket.io za pomocą Passport.js",
+  "main": "serwer.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node serwer.js"
   },
-  "author": "Michał Skałkowski <mskalkowski@inf.ug.edu.pl>",
-  "license": "MIT",
+  "author": "",
+  "license": "ISC",
   "dependencies": {
-    "express": "3.x",
-    "socket.io": "^0.9.16"
+    "connect": "^2.14.5",
+    "express": "^3.5.2",
+    "socket.io": "^0.9.16",
+    "passport": "^0.2.0",
+    "passport-local": "^1.0.0",
+    "passport.socketio": "^3.0.1",
+    "redis": "0.8.3"
   }
 }
