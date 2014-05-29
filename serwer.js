@@ -21,39 +21,38 @@ var history = []; // historia chatu
 var redis = require("redis"),
     client = redis.createClient()
 
-var userzy = []; //tablica userow
+    var userzy = []; //tablica userow
 var flaga = false;
 
 // Konfiguracja passport.js
-passport.serializeUser(function (user, done) {
+passport.serializeUser(function(user, done) {
     done(null, user);
 });
 
-passport.deserializeUser(function (obj, done) {
+passport.deserializeUser(function(obj, done) {
     done(null, obj);
 });
 
 //autentykacja
 passport.use(new LocalStrategy(
-    function (username, password, done) {
+    function(username, password, done) {
         console.log("Sprawdzam usera " + username);
 
         //baza danych; wywoluje na niej get
-        client.get(username, function (err, reply) {
-            if(reply !== null && reply.toString() === password){
+        client.get(username, function(err, reply) {
+            if (reply !== null && reply.toString() === password) {
                 console.log("user OK");
                 var d = new Date();
                 userzy.push(username);
-                client.rpush("LOG", username + ": " + d, function (err, reply) {
+                client.rpush("LOG", username + ": " + d, function(err, reply) {
                     console.log("Zapis w logach");
                 });
 
                 return done(null, {
-                username: username,
-                password: password
-            });
-            }
-            else{
+                    username: username,
+                    password: password
+                });
+            } else {
                 console.log("Eeeeeeee");
                 flaga = false;
                 return done(null, false);
@@ -72,8 +71,11 @@ app.use(express.session({
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.static('public'));
+app.use(express.json());
+app.use(express.urlencoded());
+app.use(express.multipart());
 
-app.get('/', function (req, res) {
+app.get('/', function(req, res) {
     var body = '<html><body>';
     var username;
     if (req.user) {
@@ -87,16 +89,8 @@ app.get('/', function (req, res) {
     res.send(body);
 });
 
-app.get('/login', function (req, res) {
-    var body = '<html><body>'
-    body += '<form action="/login" method="post">';
-    body += '<div><label>Użytkownik:</label>';
-    body += '<input type="text" name="username"/><br/></div>';
-    body += '<div><label>Hasło:</label>';
-    body += '<input type="password" name="password"/></div>';
-    body += '<div><input type="submit" value="Zaloguj"/></div></form>';
-    body += '</body></html>'
-    res.send(body);
+app.get('/login', function(req, res) {
+    res.redirect('/login.html');
 });
 
 // wywolanie strony login metoda post
@@ -104,27 +98,39 @@ app.post('/login',
     passport.authenticate('local', {
         failureRedirect: '/login'
     }),
-    function (req, res) {
+    function(req, res) {
         res.redirect('/authorized.html');
     }
 );
 
-app.get('/logout', function (req, res) {
+app.get('/logout', function(req, res) {
     console.log('Wylogowanie...')
     flaga = false;
     req.logout();
     res.redirect('/login');
 });
 
+app.post('/signup', function(req, res) {
+    var username = req.body.username;
+    var password = req.body.password;
+    var password2 = req.body.password2;
+    if (password === password2) {
+        client.set(username, password, function(err, reply) {
+            console.log(reply.toString());
+        });
+        res.redirect('/login')
+    }
+});
+
 server = http.createServer(app);
 sio = socketIo.listen(server);
 
-var onAuthorizeSuccess = function (data, accept) {
+var onAuthorizeSuccess = function(data, accept) {
     console.log('Udane połączenie z socket.io');
     accept(null, true);
 };
 
-var onAuthorizeFail = function (data, message, error, accept) {
+var onAuthorizeFail = function(data, message, error, accept) {
     if (error) {
         throw new Error(message);
     }
@@ -144,21 +150,21 @@ sio.set('authorization', passportSocketIo.authorize({
 
 sio.set('log level', 2); // 3 == DEBUG, 2 == INFO, 1 == WARN, 0 == ERROR
 
-sio.sockets.on('connection', function (socket) {
+sio.sockets.on('connection', function(socket) {
     var myId = id;
     id++;
-    
+
     socket.emit('username', userzy[myId]);
     socket.emit('history', history);
 
-    socket.on('reply', function (data) {
+    socket.on('reply', function(data) {
         console.log(data);
     });
 
     /** 
-    * Chat
-    */
-    socket.on('send msg', function (data) {
+     * Chat
+     */
+    socket.on('send msg', function(data) {
         var m = userzy[myId] + ": " + data;
         console.log(m);
         history.unshift(m);
@@ -166,6 +172,6 @@ sio.sockets.on('connection', function (socket) {
     });
 });
 
-server.listen(3000, function () {
+server.listen(3000, function() {
     console.log('Serwer pod adresem http://localhost:3000/');
 });
