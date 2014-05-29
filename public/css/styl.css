@@ -6,6 +6,8 @@
 	margin-bottom: 16px;
 	height: 300px;
 	overflow: auto;
+	width: 400px
+	float:left;
 }
 .bulb {
 	font-size: 16px;
@@ -14,4 +16,7 @@
 .bulb img {
 	height: 18px;
 	vertical-align: bottom;
+}
+#postacie {
+	float:right;
 }

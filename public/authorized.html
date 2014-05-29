@@ -7,23 +7,71 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular.js"></script>
     <script src="js/main.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <link rel="stylesheet" href="css/styl.css">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"> 
+    <link rel="stylesheet" href="http://getbootstrap.com/examples/signin/signin.css"> 
 </head>
 
 <body data-ng-app="czatApka">
     <div data-ng-controller="chatCtrlr">
-        <div>
-            {{wyswietlNik()}}
+        <div class="navbar navbar-fixed-top navbar-inverse" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <div class="navbar-brand">{{wyswietlNik()}}</div>
         </div>
-        <div id="chatLog">
-            <div data-ng-repeat="msg in msgs track by $index">{{msg}}</div>
-        </div>
-        <div>
-            <form action="" data-ng-submit="sendMsg()">
-                <input type="text" data-ng-model="msg.text" maxlength="20">
-            </form>
-        </div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+    </div><!-- /.nav-collapse -->
+</div><!-- /.container -->
+</div><!-- /.navbar -->
+<br />
+
+    <button type="button" class="btn btn-success" id = "gotowosc">Start</button>
+
+
+
+<div id="gra">
+    <div id="chatLog">
+        <div data-ng-repeat="msg in msgs track by $index">{{msg}}</div>
     </div>
-    <div><a href="/logout">Wyloguj</a></div>
+    <div>
+        <form action="" data-ng-submit="sendMsg()">
+            <input type="text" data-ng-model="msg.text" maxlength="20">
+        </form>
+    </div>
+
+    <a href="/logout"><button type="button" class="btn btn-lg btn-danger">Wyloguj</button></a>
+</div>
+</div>
+
+
+<div id="postacie">
+    <h2 class="sub-header">Gracze: </h2>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Login</th>
+                    <th>Postać</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</div>
+
 </body>
 </html>

@@ -13,7 +13,7 @@ var sessionSecret = 'wielkiSekret44';
 var sessionKey = 'connect.sid';
 var server;
 var sio;
-
+var gotowy = 0;
 var id = 0;
 
 var history = []; // historia chatu
@@ -21,14 +21,22 @@ var history = []; // historia chatu
 var redis = require("redis"),
     client = redis.createClient()
 
-    var userzy = []; //tablica userow
-var flaga = false;
+    var userzy = {}; //zbior obiektow
+var postacie = []; //tablica postaci
 
+var getPostacie = function() {
+    client.lrange("postacie2", 0, 15, function(err, reply) {
+        console.log(reply);
+        postacie = reply;
+        postacie.forEach(function(entry) {
+            console.log(entry);
+        });
+    });
+}
 // Konfiguracja passport.js
 passport.serializeUser(function(user, done) {
     done(null, user);
 });
-
 passport.deserializeUser(function(obj, done) {
     done(null, obj);
 });
@@ -43,7 +51,9 @@ passport.use(new LocalStrategy(
             if (reply !== null && reply.toString() === password) {
                 console.log("user OK");
                 var d = new Date();
-                userzy.push(username);
+                userzy[id] = {
+                    name: username
+                }
                 client.rpush("LOG", username + ": " + d, function(err, reply) {
                     console.log("Zapis w logach");
                 });
@@ -54,7 +64,6 @@ passport.use(new LocalStrategy(
                 });
             } else {
                 console.log("Eeeeeeee");
-                flaga = false;
                 return done(null, false);
             }
         });
@@ -105,7 +114,7 @@ app.post('/login',
 
 app.get('/logout', function(req, res) {
     console.log('Wylogowanie...')
-    flaga = false;
+
     req.logout();
     res.redirect('/login');
 });
@@ -154,8 +163,10 @@ sio.sockets.on('connection', function(socket) {
     var myId = id;
     id++;
 
-    socket.emit('username', userzy[myId]);
-    socket.emit('history', history);
+    socket.emit('username', userzy[myId].name);
+    //  socket.emit('history', history);
+    console.log(userzy);
+    sio.sockets.emit('gracze', userzy);
 
     socket.on('reply', function(data) {
         console.log(data);
@@ -165,13 +176,56 @@ sio.sockets.on('connection', function(socket) {
      * Chat
      */
     socket.on('send msg', function(data) {
-        var m = userzy[myId] + ": " + data;
+        var m = userzy[myId].name + ": " + data;
         console.log(m);
         history.unshift(m);
         sio.sockets.emit('rec msg', m);
     });
+
+    // zliczanie graczy
+    socket.on('gotowy', function(data) {
+        gotowy++;
+        console.log(Object.keys(userzy).length);
+    });
+
+
+    //usuwanie graczy
+    socket.on('disconnect', function() {
+        console.log("Gracz " + userzy[myId].name + " nas opuscil");
+        delete userzy[myId];
+
+        console.log(userzy);
+        sio.sockets.emit('gracze', userzy);
+        // /**
+        //  * Dodanie informacji do bazy o wylogowaniu sie gracza
+        //  */
+        // runSample(playername, 2);
+        // results[playername] = {};
+        // for (i = 0; i < data.length; i++) {
+        //     if (data[i].text == playername) {
+        //         var doUsuniecia = i;
+        //     }
+        // }
+
+        // /**
+        //  * Usuniecie gracza z listy graczy
+        //  */
+        // data.splice(doUsuniecia, 1);
+        // io.sockets.emit('liczbaGraczy', data);
+
+        // if (admin) {
+        //     io.sockets.emit('admin', 1);
+        // }
+        // odeszlo++;
+        // console.log("Usunieto gracza nr " + doUsuniecia);
+
+    });
+
+
+
 });
 
 server.listen(3000, function() {
+    getPostacie();
     console.log('Serwer pod adresem http://localhost:3000/');
 });
