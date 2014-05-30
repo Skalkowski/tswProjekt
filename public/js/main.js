@@ -9,6 +9,7 @@ app.controller('chatCtrlr', ['$scope', 'socket',
     function($scope, socket) {
 
         $('#gra').hide();
+        $('#gotowosc').attr("disabled", "disabled");
         $scope.msgs = [];
         $scope.user = "";
         $scope.userzy = {};
@@ -61,5 +62,17 @@ app.controller('chatCtrlr', ['$scope', 'socket',
             $scope.msgs.unshift(data);
             $scope.$digest();
         });
+
+        //wylogowanie po odświeżaniu
+        socket.on('wylogowanie', function() {
+            window.location = '/login.html';
+
+        });
+
+        socket.on('guzikStart', function() {
+            $('#gotowosc').removeAttr("disabled");
+            $scope.$digest();
+        });
+
     }
 ]);

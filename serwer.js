@@ -16,6 +16,7 @@ var sio;
 var gotowy = 0;
 var id = 0;
 
+
 var history = []; // historia chatu
 //baza danych redis
 var redis = require("redis"),
@@ -44,8 +45,16 @@ passport.deserializeUser(function(obj, done) {
 //autentykacja
 passport.use(new LocalStrategy(
     function(username, password, done) {
+        var zalogowany = false;
         console.log("Sprawdzam usera " + username);
-
+        // for (var i in userzy) {
+        //     if (userzy[i].name === username) {
+        //         zalogowany = true;
+        //         console.log("juz zalogowany");
+        //     }
+        // }
+        // if(zalogowany){
+        // }
         //baza danych; wywoluje na niej get
         client.get(username, function(err, reply) {
             if (reply !== null && reply.toString() === password) {
@@ -160,69 +169,58 @@ sio.set('authorization', passportSocketIo.authorize({
 sio.set('log level', 2); // 3 == DEBUG, 2 == INFO, 1 == WARN, 0 == ERROR
 
 sio.sockets.on('connection', function(socket) {
+
     var myId = id;
     id++;
+    if (userzy[myId]) {
+        socket.emit('username', userzy[myId].name);
 
-    socket.emit('username', userzy[myId].name);
-    //  socket.emit('history', history);
-    console.log(userzy);
-    sio.sockets.emit('gracze', userzy);
+        //  socket.emit('history', history);
 
-    socket.on('reply', function(data) {
-        console.log(data);
-    });
-
-    /** 
-     * Chat
-     */
-    socket.on('send msg', function(data) {
-        var m = userzy[myId].name + ": " + data;
-        console.log(m);
-        history.unshift(m);
-        sio.sockets.emit('rec msg', m);
-    });
-
-    // zliczanie graczy
-    socket.on('gotowy', function(data) {
-        gotowy++;
-        console.log(Object.keys(userzy).length);
-    });
-
-
-    //usuwanie graczy
-    socket.on('disconnect', function() {
-        console.log("Gracz " + userzy[myId].name + " nas opuscil");
-        delete userzy[myId];
-
-        console.log(userzy);
         sio.sockets.emit('gracze', userzy);
-        // /**
-        //  * Dodanie informacji do bazy o wylogowaniu sie gracza
-        //  */
-        // runSample(playername, 2);
-        // results[playername] = {};
-        // for (i = 0; i < data.length; i++) {
-        //     if (data[i].text == playername) {
-        //         var doUsuniecia = i;
-        //     }
-        // }
 
-        // /**
-        //  * Usuniecie gracza z listy graczy
-        //  */
-        // data.splice(doUsuniecia, 1);
-        // io.sockets.emit('liczbaGraczy', data);
+        socket.on('reply', function(data) {
+            console.log(data);
+        });
 
-        // if (admin) {
-        //     io.sockets.emit('admin', 1);
-        // }
-        // odeszlo++;
-        // console.log("Usunieto gracza nr " + doUsuniecia);
+        /** 
+         * Chat
+         */
+        socket.on('send msg', function(data) {
+            var m = userzy[myId].name + ": " + data;
+            console.log(m);
+            history.unshift(m);
+            sio.sockets.emit('rec msg', m);
+        });
 
-    });
+        // zliczanie graczy
+        socket.on('gotowy', function(data) {
+            gotowy++;
+            console.log(gotowy);
+        });
 
 
+        //usuwanie graczy
+        socket.on('disconnect', function() {
+            console.log("Gracz " + userzy[myId].name + " nas opuscil");
+            delete userzy[myId];
 
+            console.log(userzy);
+            sio.sockets.emit('gracze', userzy);
+        });
+
+        //sprawdzenie czy jest więcej niż 3 osoby
+        if (Object.keys(userzy).length >= 3) {
+            console.log("więcej niż 3");
+            sio.sockets.emit('guzikStart', 1);
+        }
+
+
+
+
+    } else {
+        socket.emit('wylogowanie', 1);
+    }
 });
 
 server.listen(3000, function() {
