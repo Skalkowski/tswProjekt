@@ -196,6 +196,8 @@ sio.sockets.on('connection', function(socket) {
         // zliczanie graczy
         socket.on('gotowy', function(data) {
             gotowy++;
+
+            socket.emit('gotowyOdp');
             console.log(gotowy);
         });
 
@@ -212,14 +214,14 @@ sio.sockets.on('connection', function(socket) {
         //sprawdzenie czy jest więcej niż 3 osoby
         if (Object.keys(userzy).length >= 3) {
             console.log("więcej niż 3");
-            sio.sockets.emit('guzikStart', 1);
+            sio.sockets.emit('guzikStart');
         }
 
 
 
 
     } else {
-        socket.emit('wylogowanie', 1);
+        socket.emit('wylogowanie');
     }
 });
 

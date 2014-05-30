@@ -52,7 +52,7 @@ app.controller('chatCtrlr', ['$scope', 'socket',
         });
 
         $('#gotowosc').click(function() {
-            socket.emit('gotowy', 1);
+            socket.emit('gotowy');
             // $('#gra').show();
         });
 
@@ -73,6 +73,10 @@ app.controller('chatCtrlr', ['$scope', 'socket',
             $('#gotowosc').removeAttr("disabled");
             $scope.$digest();
         });
+
+        socket.on('gotowyOdp', function() {
+            alert('dupa');
+        })
 
     }
 ]);
