@@ -56,7 +56,6 @@ app.controller('chatCtrlr', ['$scope', 'socket',
 
         $('#gotowosc').click(function() {
             socket.emit('gotowy');
-            // $('#gra').show();
         });
 
 

@@ -20,7 +20,7 @@ var id = 0;
 var history = []; // historia chatu
 //baza danych redis
 var redis = require("redis"),
-client = redis.createClient()
+    client = redis.createClient()
 
     var userzy = {}; //zbior obiektow
 var postacie = []; //tablica postaci
@@ -47,37 +47,40 @@ passport.use(new LocalStrategy(
     function(username, password, done) {
         var zalogowany = false;
         console.log("Sprawdzam usera " + username);
-        // for (var i in userzy) {
-        //     if (userzy[i].name === username) {
-        //         zalogowany = true;
-        //         console.log("juz zalogowany");
-        //     }
-        // }
-        // if(zalogowany){
-        // }
-        //baza danych; wywoluje na niej get
-        client.get(username, function(err, reply) {
-            if (reply !== null && reply.toString() === password) {
-                console.log("user OK");
-                var d = new Date();
-                userzy[id] = {
-                    name: username
-                }
-                client.rpush("LOG", username + ": " + d, function(err, reply) {
-                    console.log("Zapis w logach");
-                });
-
-                return done(null, {
-                    username: username,
-                    password: password
-                });
-            } else {
-                console.log("Eeeeeeee");
-                return done(null, false);
+        for (var i in userzy) {
+            if (userzy[i].name === username) {
+                zalogowany = true;
+                console.log("juz zalogowany");
             }
-        });
+        }
+        if (zalogowany) {
+            socket.emit('wylogowanie');
+        } else {
+
+
+            //baza danych; wywoluje na niej get
+            client.get(username, function(err, reply) {
+                if (reply !== null && reply.toString() === password) {
+                    console.log("user OK");
+                    var d = new Date();
+                    userzy[id] = {
+                        name: username
+                    }
+                    client.rpush("LOG", username + ": " + d, function(err, reply) {
+                        console.log("Zapis w logach");
+                    });
+
+                    return done(null, {
+                        username: username,
+                        password: password
+                    });
+                } else {
+                    return done(null, false);
+                }
+            });
+        }
     }
-    ));
+));
 
 app.use(express.cookieParser());
 app.use(express.urlencoded());
@@ -119,7 +122,7 @@ app.post('/login',
     function(req, res) {
         res.redirect('/authorized.html');
     }
-    );
+);
 
 app.get('/logout', function(req, res) {
     console.log('Wylogowanie...')
@@ -186,7 +189,7 @@ sio.sockets.on('connection', function(socket) {
         /** 
          * Chat
          */
-         socket.on('send msg', function(data) {
+        socket.on('send msg', function(data) {
             var m = userzy[myId].name + ": " + data;
             console.log(m);
             history.unshift(m);
