@@ -20,7 +20,7 @@ var id = 0;
 var history = []; // historia chatu
 //baza danych redis
 var redis = require("redis"),
-    client = redis.createClient()
+client = redis.createClient()
 
     var userzy = {}; //zbior obiektow
 var postacie = []; //tablica postaci
@@ -77,7 +77,7 @@ passport.use(new LocalStrategy(
             }
         });
     }
-));
+    ));
 
 app.use(express.cookieParser());
 app.use(express.urlencoded());
@@ -119,7 +119,7 @@ app.post('/login',
     function(req, res) {
         res.redirect('/authorized.html');
     }
-);
+    );
 
 app.get('/logout', function(req, res) {
     console.log('Wylogowanie...')
@@ -186,7 +186,7 @@ sio.sockets.on('connection', function(socket) {
         /** 
          * Chat
          */
-        socket.on('send msg', function(data) {
+         socket.on('send msg', function(data) {
             var m = userzy[myId].name + ": " + data;
             console.log(m);
             history.unshift(m);
@@ -212,7 +212,7 @@ sio.sockets.on('connection', function(socket) {
         });
 
         //sprawdzenie czy jest więcej niż 3 osoby
-        if (Object.keys(userzy).length >= 3) {
+        if (Object.keys(userzy).length >= 1) {
             console.log("więcej niż 3");
             sio.sockets.emit('guzikStart');
         }

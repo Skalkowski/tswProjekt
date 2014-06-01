@@ -9,6 +9,8 @@ app.controller('chatCtrlr', ['$scope', 'socket',
     function($scope, socket) {
 
         $('#gra').hide();
+        $('#panelAutor').hide();
+        $('#panelOpis').hide();
         $('#gotowosc').attr("disabled", "disabled");
         $scope.msgs = [];
         $scope.user = "";
@@ -16,6 +18,7 @@ app.controller('chatCtrlr', ['$scope', 'socket',
 
 
         $scope.sendMsg = function() {
+            s
             if ($scope.msg && $scope.msg.text) {
                 socket.emit('send msg', $scope.msg.text);
                 $scope.msg.text = '';
@@ -58,6 +61,8 @@ app.controller('chatCtrlr', ['$scope', 'socket',
 
 
 
+
+
         socket.on('rec msg', function(data) {
             $scope.msgs.unshift(data);
             $scope.$digest();
@@ -68,15 +73,48 @@ app.controller('chatCtrlr', ['$scope', 'socket',
             window.location = '/login.html';
 
         });
-
+        // kiedy okreslona liczba graczy bedzie, przycisk jest dostepny
         socket.on('guzikStart', function() {
             $('#gotowosc').removeAttr("disabled");
             $scope.$digest();
         });
 
         socket.on('gotowyOdp', function() {
-            alert('dupa');
+            //    alert('Zaczynamy gre!!');
+            $('#gra').show();
         })
 
+
+
+
+
+
+        //przyciski Menu
+        $('#autorMenu').click(function() {
+            czyscMenu();
+            $('#autorMenu').addClass("active");
+            $('#panelAutor').show();
+        });
+
+        $('#graMenu').click(function() {
+            czyscMenu();
+            $('#graMenu').addClass("active");
+            $('#panelGra').show();
+
+        });
+        $('#opisMenu').click(function() {
+            czyscMenu();
+            $('#opisMenu').addClass("active");
+            $('#panelOpis').show();
+        });
+
+        function czyscMenu() {
+            $('#panelGra').hide();
+            $('#panelOpis').hide();
+            $('#panelAutor').hide();
+            $('#autorMenu').removeClass();
+            $('#opisMenu').removeClass();
+            $('#graMenu').removeClass();
+        }
     }
 ]);
