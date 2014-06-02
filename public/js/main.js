@@ -63,16 +63,16 @@ app.controller('chatCtrlr', ['$scope', 'socket',
         //po nacisnieciu start wysyłanie info do servera
         $('#gotowosc').click(function() {
             socket.emit('gotowy');
-            alert('czekaj!');
-        });
 
-        socket.on('czekanie', function() {
-            $('panelGotowosci').append("<p>Czekamy na reszte graczy</p>")
+        });
+        //czekanie az wszyscy portwierdza
+        socket.on('czekanie', function(ilosc) {
+            $('#panelGotowosci').append("<p> Czekamy na " + ilosc + "graczy </p>");
         })
 
         //start gry po potwierdzeniu gotowowości przez wszystkich graczy
         socket.on('startGry', function() {
-            //    alert('Zaczynamy gre!!');
+            $('#panelGotowosci').empty();
             $('#gra').show();
         })
 

@@ -208,11 +208,13 @@ sio.sockets.on('connection', function(socket) {
         // zliczanie graczy
         socket.on('gotowy', function(data) {
             gotowy++;
+            var pozostalo = 0;
             console.log('gotowych graczy:' + gotowy);
             if (gotowy === Object.keys(userzy).length) {
                 sio.sockets.emit('startGry');
             } else {
-                socket.emit('czekanie');
+                pozostalo = Object.keys(userzy).length - gotowy;
+                socket.emit('czekanie', pozostalo);
             }
 
 
