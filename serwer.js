@@ -47,38 +47,38 @@ passport.use(new LocalStrategy(
     function(username, password, done) {
         var zalogowany = false;
         console.log("Sprawdzam usera " + username);
-        for (var i in userzy) {
-            if (userzy[i].name === username) {
-                zalogowany = true;
-                console.log("juz zalogowany");
-            }
-        }
-        if (zalogowany) {
-            socket.emit('wylogowanie');
-        } else {
+        // for (var i in userzy) {
+        //     if (userzy[i].name === username) {
+        //         zalogowany = true;
+        //         console.log("juz zalogowany");
+        //     }
+        // }
+        // if (zalogowany) {
+        //     socket.emit('wylogowanie');
+        // } else {
 
 
-            //baza danych; wywoluje na niej get
-            client.get(username, function(err, reply) {
-                if (reply !== null && reply.toString() === password) {
-                    console.log("user OK");
-                    var d = new Date();
-                    userzy[id] = {
-                        name: username
-                    }
-                    client.rpush("LOG", username + ": " + d, function(err, reply) {
-                        console.log("Zapis w logach");
-                    });
-
-                    return done(null, {
-                        username: username,
-                        password: password
-                    });
-                } else {
-                    return done(null, false);
+        //baza danych; wywoluje na niej get
+        client.get(username, function(err, reply) {
+            if (reply !== null && reply.toString() === password) {
+                console.log("user OK");
+                var d = new Date();
+                userzy[id] = {
+                    name: username
                 }
-            });
-        }
+                client.rpush("LOG", username + ": " + d, function(err, reply) {
+                    console.log("Zapis w logach");
+                });
+
+                return done(null, {
+                    username: username,
+                    password: password
+                });
+            } else {
+                return done(null, false);
+            }
+        });
+        // }
     }
 ));
 
@@ -178,6 +178,15 @@ sio.sockets.on('connection', function(socket) {
     if (userzy[myId]) {
         socket.emit('username', userzy[myId].name);
 
+        //usuwanie graczy
+        socket.on('disconnect', function() {
+            console.log("Gracz " + userzy[myId].name + " nas opuscil");
+            delete userzy[myId];
+
+            console.log(userzy);
+            sio.sockets.emit('gracze', userzy);
+        });
+
         //  socket.emit('history', history);
 
         sio.sockets.emit('gracze', userzy);
@@ -199,23 +208,22 @@ sio.sockets.on('connection', function(socket) {
         // zliczanie graczy
         socket.on('gotowy', function(data) {
             gotowy++;
+            console.log('gotowych graczy:' + gotowy);
+            if (gotowy === Object.keys(userzy).length) {
+                sio.sockets.emit('startGry');
+            } else {
+                socket.emit('czekanie');
+            }
 
-            socket.emit('gotowyOdp');
+
             console.log(gotowy);
         });
 
 
-        //usuwanie graczy
-        socket.on('disconnect', function() {
-            console.log("Gracz " + userzy[myId].name + " nas opuscil");
-            delete userzy[myId];
 
-            console.log(userzy);
-            sio.sockets.emit('gracze', userzy);
-        });
 
-        //sprawdzenie czy jest więcej niż 3 osoby
-        if (Object.keys(userzy).length >= 1) {
+        //sprawdzenie czy jest więcej niż x osob
+        if (Object.keys(userzy).length >= 2) {
             console.log("więcej niż 3");
             sio.sockets.emit('guzikStart');
         }

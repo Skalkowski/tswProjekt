@@ -54,10 +54,27 @@ app.controller('chatCtrlr', ['$scope', 'socket',
             $scope.$digest();
         });
 
-        $('#gotowosc').click(function() {
-            socket.emit('gotowy');
+        // kiedy okreslona liczba graczy bedzie, przycisk jest dostepny
+        socket.on('guzikStart', function() {
+            $('#gotowosc').removeAttr("disabled");
+            $scope.$digest();
         });
 
+        //po nacisnieciu start wysyłanie info do servera
+        $('#gotowosc').click(function() {
+            socket.emit('gotowy');
+            alert('czekaj!');
+        });
+
+        socket.on('czekanie', function() {
+            $('panelGotowosci').append("<p>Czekamy na reszte graczy</p>")
+        })
+
+        //start gry po potwierdzeniu gotowowości przez wszystkich graczy
+        socket.on('startGry', function() {
+            //    alert('Zaczynamy gre!!');
+            $('#gra').show();
+        })
 
 
 
@@ -72,16 +89,9 @@ app.controller('chatCtrlr', ['$scope', 'socket',
             window.location = '/login.html';
 
         });
-        // kiedy okreslona liczba graczy bedzie, przycisk jest dostepny
-        socket.on('guzikStart', function() {
-            $('#gotowosc').removeAttr("disabled");
-            $scope.$digest();
-        });
 
-        socket.on('gotowyOdp', function() {
-            //    alert('Zaczynamy gre!!');
-            $('#gra').show();
-        })
+
+
 
 
 
