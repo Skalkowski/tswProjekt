@@ -15,6 +15,9 @@ var server;
 var sio;
 var gotowy = 0;
 var id = 0;
+var OGRANICZENIE = 2;
+var odpowiedzial = false;
+var licznik = 0;
 
 
 var history = []; // historia chatu
@@ -26,6 +29,7 @@ var redis = require("redis"),
 var postacie = []; //tablica postaci
 
 var getPostacie = function() {
+    var postacieTab = [];
     client.lrange("postacie2", 0, 15, function(err, reply) {
         console.log(reply);
         postacie = reply;
@@ -33,6 +37,15 @@ var getPostacie = function() {
             console.log(entry);
         });
     });
+
+    var i = 0;
+    for (var j in postacie) {
+        postacieTab[i] = postacie[j];
+        console.log("daadsfsdf" + j);
+        i++;
+    }
+
+    return postacieTab;
 }
 // Konfiguracja passport.js
 passport.serializeUser(function(user, done) {
@@ -47,38 +60,37 @@ passport.use(new LocalStrategy(
     function(username, password, done) {
         var zalogowany = false;
         console.log("Sprawdzam usera " + username);
-        // for (var i in userzy) {
-        //     if (userzy[i].name === username) {
-        //         zalogowany = true;
-        //         console.log("juz zalogowany");
-        //     }
-        // }
-        // if (zalogowany) {
-        //     socket.emit('wylogowanie');
-        // } else {
-
-
-        //baza danych; wywoluje na niej get
-        client.get(username, function(err, reply) {
-            if (reply !== null && reply.toString() === password) {
-                console.log("user OK");
-                var d = new Date();
-                userzy[id] = {
-                    name: username
-                }
-                client.rpush("LOG", username + ": " + d, function(err, reply) {
-                    console.log("Zapis w logach");
-                });
-
-                return done(null, {
-                    username: username,
-                    password: password
-                });
-            } else {
-                return done(null, false);
+        for (var i in userzy) {
+            if (userzy[i].name === username) {
+                zalogowany = true;
+                console.log("juz zalogowany");
             }
-        });
-        // }
+        }
+        if (zalogowany) {
+            return done(null, false);
+        } else {
+            //baza danych; wywoluje na niej get
+            client.get(username, function(err, reply) {
+                if (reply !== null && reply.toString() === password) {
+                    console.log("user OK");
+                    var d = new Date();
+                    userzy[id] = {
+                        name: username,
+                        gotowy: false
+                    }
+                    client.rpush("LOG", username + ": " + d, function(err, reply) {
+                        console.log("Zapis w logach");
+                    });
+
+                    return done(null, {
+                        username: username,
+                        password: password
+                    });
+                } else {
+                    return done(null, false);
+                }
+            });
+        }
     }
 ));
 
@@ -171,6 +183,18 @@ sio.set('authorization', passportSocketIo.authorize({
 
 sio.set('log level', 2); // 3 == DEBUG, 2 == INFO, 1 == WARN, 0 == ERROR
 
+
+var przydzielPostacie = function() {
+    var postacie = getPostacie();
+
+    for (var i in userzy) {
+        var wylosowana = Math.floor(Math.random() * 1000) % postacie.length;
+        userzy[i].postac = postacie[wylosowana];
+        console.log(userzy[i].postac + "  test random");
+        postacie.splice(wylosowana, 1);
+    }
+}
+
 sio.sockets.on('connection', function(socket) {
 
     var myId = id;
@@ -181,9 +205,17 @@ sio.sockets.on('connection', function(socket) {
         //usuwanie graczy
         socket.on('disconnect', function() {
             console.log("Gracz " + userzy[myId].name + " nas opuscil");
-            delete userzy[myId];
+            if (userzy[myId].gotowy) {
+                gotowy--;
+                id--;
+                console.log('usuniety user');
+            }
 
+            delete userzy[myId];
             console.log(userzy);
+            if (Object.keys(userzy).length < OGRANICZENIE) {
+                sio.sockets.emit('guzikStart', 2);
+            }
             sio.sockets.emit('gracze', userzy);
         });
 
@@ -193,6 +225,15 @@ sio.sockets.on('connection', function(socket) {
 
         socket.on('reply', function(data) {
             console.log(data);
+        });
+
+        socket.on('odpowiedzialem', function() {
+            licznik = licznik + 1;
+            console.log("licze" + licznik);
+            console.log(userzy.length);
+            if (licznik == Object.keys(userzy).length)
+                licznik = 0;
+            sio.sockets.emit('pytasz', licznik);
         });
 
         /** 
@@ -208,10 +249,20 @@ sio.sockets.on('connection', function(socket) {
         // zliczanie graczy
         socket.on('gotowy', function(data) {
             gotowy++;
+            userzy[myId].gotowy = true;
             var pozostalo = 0;
             console.log('gotowych graczy:' + gotowy);
             if (gotowy === Object.keys(userzy).length) {
+                przydzielPostacie();
                 sio.sockets.emit('startGry');
+                sio.sockets.emit('gracze', userzy);
+                var pytajacy = 0;
+                var i = 0;
+
+                console.log("wybralem gracza");
+                sio.sockets.emit('pytasz', licznik);
+
+
             } else {
                 pozostalo = Object.keys(userzy).length - gotowy;
                 socket.emit('czekanie', pozostalo);
@@ -225,9 +276,9 @@ sio.sockets.on('connection', function(socket) {
 
 
         //sprawdzenie czy jest więcej niż x osob
-        if (Object.keys(userzy).length >= 2) {
-            console.log("więcej niż 3");
-            sio.sockets.emit('guzikStart');
+        if (Object.keys(userzy).length >= OGRANICZENIE) {
+            console.log("jest przynajmniej: " + OGRANICZENIE + " graczy");
+            sio.sockets.emit('guzikStart', 1);
         }
 
 
@@ -237,6 +288,8 @@ sio.sockets.on('connection', function(socket) {
         socket.emit('wylogowanie');
     }
 });
+
+
 
 server.listen(3000, function() {
     getPostacie();

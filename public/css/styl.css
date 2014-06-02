@@ -1,3 +1,7 @@
+#gra {
+	float:left;
+}
+
 #chatLog {
 	border-top: 1px solid #ddd;
 	border-bottom: 1px solid #ddd;
@@ -6,10 +10,7 @@
 	margin-bottom: 16px;
 	height: 300px;
 	overflow: auto;
-	width: 400px
-	float:left;
+	width: 400px;
+	float: right;
 }
 
-#postacie {
-	float:right;
-}

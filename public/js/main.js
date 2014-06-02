@@ -15,10 +15,12 @@ app.controller('chatCtrlr', ['$scope', 'socket',
         $scope.msgs = [];
         $scope.user = "";
         $scope.userzy = {};
+        $scope.pytasz = false;
+        $scope.id = 0;
 
 
         $scope.sendMsg = function() {
-            s
+
             if ($scope.msg && $scope.msg.text) {
                 socket.emit('send msg', $scope.msg.text);
                 $scope.msg.text = '';
@@ -28,6 +30,11 @@ app.controller('chatCtrlr', ['$scope', 'socket',
         $scope.wyswietlNik = function() {
             return $scope.user;
         };
+
+        $scope.zapytalem = function() {
+            $scope.pytasz = false;
+            socket.emit('odpowiedzialem', $scope.id);
+        }
 
         socket.on('history', function(data) {
             $scope.msgs = data;
@@ -47,7 +54,8 @@ app.controller('chatCtrlr', ['$scope', 'socket',
 
             console.log(data);
             for (var i in data) {
-                $('tbody').append("<tr><td>" + iterator + "</td><td>" + data[i].name + "</td><td>postac</td></tr>");
+                //                var postac = data[i].postac !== undefined ? data[i].postacie : "";
+                $('tbody').append("<tr><td>" + iterator + "</td><td>" + data[i].name + "</td><td>" + data[i].postac + "</td></tr>");
                 iterator++;
             }
 
@@ -55,8 +63,12 @@ app.controller('chatCtrlr', ['$scope', 'socket',
         });
 
         // kiedy okreslona liczba graczy bedzie, przycisk jest dostepny
-        socket.on('guzikStart', function() {
-            $('#gotowosc').removeAttr("disabled");
+        socket.on('guzikStart', function(data) {
+            if (data === 1) {
+                $('#gotowosc').removeAttr("disabled");
+            } else {
+                $('#gotowosc').attr("disabled", "disabled");
+            }
             $scope.$digest();
         });
 
@@ -77,7 +89,13 @@ app.controller('chatCtrlr', ['$scope', 'socket',
         })
 
 
-
+        socket.on('pytasz', function(pytajacy) {
+            if ($scope.userzy[pytajacy].name == $scope.user) {
+                $scope.pytasz = true;
+                $scope.id = pytajacy;
+            }
+            $scope.$digest();
+        });
 
         socket.on('rec msg', function(data) {
             $scope.msgs.unshift(data);
