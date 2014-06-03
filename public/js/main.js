@@ -27,25 +27,32 @@ app.controller('chatCtrlr', ['$scope', 'socket',
             }
         };
 
-        $scope.wyswietlNik = function() {
-            return $scope.user;
-        };
-
-        $scope.zapytalem = function() {
-            $scope.pytasz = false;
-            socket.emit('odpowiedzialem', $scope.id);
-        }
+        socket.on('rec msg', function(data) {
+            $scope.msgs.unshift(data);
+            $scope.$digest();
+        });
 
         socket.on('history', function(data) {
             $scope.msgs = data;
             $scope.$digest();
         });
 
+        //wyswietlenie nicku
+        $scope.wyswietlNik = function() {
+            return $scope.user;
+        };
+
+
+
+
+
+        //odebranie i przypisanie swojego loginu
         socket.on('username', function(data) {
             $scope.user = data;
             $scope.$digest();
         });
 
+        //drukowanie tabelki z graczami
         socket.on('gracze', function(data) {
             $scope.userzy = data;
             console.log(data);
@@ -54,8 +61,7 @@ app.controller('chatCtrlr', ['$scope', 'socket',
 
             console.log(data);
             for (var i in data) {
-                var postac = "";
-                //                var postac = data[i].postac !== undefined ? data[i].postacie : "";
+                var postac;
                 if (data[i].postac === undefined || data[i].name === $scope.user) {
                     console.log("test postaci przed gotowe  " + data[i].postac);
                     postac = "";
@@ -97,6 +103,13 @@ app.controller('chatCtrlr', ['$scope', 'socket',
         })
 
 
+
+
+        $scope.zapytalem = function() {
+            $scope.pytasz = false;
+            socket.emit('odpowiedzialem', $scope.id);
+        }
+
         socket.on('pytasz', function(pytajacy) {
             if ($scope.userzy[pytajacy].name == $scope.user) {
                 $scope.pytasz = true;
@@ -105,24 +118,13 @@ app.controller('chatCtrlr', ['$scope', 'socket',
             $scope.$digest();
         });
 
-        socket.on('rec msg', function(data) {
-            $scope.msgs.unshift(data);
-            $scope.$digest();
-        });
+
 
         //wylogowanie po odświeżaniu
         socket.on('wylogowanie', function() {
             window.location = '/login.html';
 
         });
-
-
-
-
-
-
-
-
 
         //przyciski Menu
         $('#autorMenu').click(function() {

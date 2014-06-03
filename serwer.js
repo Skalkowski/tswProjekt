@@ -23,30 +23,26 @@ var licznik = 0;
 var history = []; // historia chatu
 //baza danych redis
 var redis = require("redis"),
-    client = redis.createClient()
+    client = redis.createClient();
 
-    var userzy = {}; //zbior obiektow
+var userzy = {}; //zbior obiektow
 var postacie = []; //tablica postaci
 
+//pobieranie postaci z bazy i dodawanie do tabeli postacieTab
 var getPostacie = function() {
     var postacieTab = [];
     client.lrange("postacie", 0, 100, function(err, reply) {
-        console.log(reply);
         postacie = reply;
-        postacie.forEach(function(entry) {
-            console.log(entry);
-        });
     });
-
     var i = 0;
     for (var j in postacie) {
         postacieTab[i] = postacie[j];
-        console.log("daadsfsdf" + j);
         i++;
     }
 
     return postacieTab;
 }
+
 // Konfiguracja passport.js
 passport.serializeUser(function(user, done) {
     done(null, user);
@@ -183,7 +179,7 @@ sio.set('authorization', passportSocketIo.authorize({
 
 sio.set('log level', 2); // 3 == DEBUG, 2 == INFO, 1 == WARN, 0 == ERROR
 
-
+//przydzielanie postaci każdemu graczowi
 var przydzielPostacie = function() {
     var postacie = getPostacie();
 
@@ -200,6 +196,8 @@ sio.sockets.on('connection', function(socket) {
     var myId = id;
     id++;
     if (userzy[myId]) {
+
+        //wysła do klienta jego login
         socket.emit('username', userzy[myId].name);
 
         //usuwanie graczy
@@ -221,11 +219,10 @@ sio.sockets.on('connection', function(socket) {
 
         //  socket.emit('history', history);
 
+        //wyslanie do klienta polecenia drukowania tabelki z graczami
         sio.sockets.emit('gracze', userzy);
 
-        socket.on('reply', function(data) {
-            console.log(data);
-        });
+
 
         //akcja
         socket.on('odpowiedzialem', function() {
@@ -268,13 +265,7 @@ sio.sockets.on('connection', function(socket) {
                 pozostalo = Object.keys(userzy).length - gotowy;
                 socket.emit('czekanie', pozostalo);
             }
-
-
-            console.log(gotowy);
         });
-
-
-
 
         //sprawdzenie czy jest więcej niż x osob
         if (Object.keys(userzy).length >= OGRANICZENIE) {
@@ -282,15 +273,10 @@ sio.sockets.on('connection', function(socket) {
             sio.sockets.emit('guzikStart', 1);
         }
 
-
-
-
     } else {
         socket.emit('wylogowanie');
     }
 });
-
-
 
 server.listen(3000, function() {
     getPostacie();
