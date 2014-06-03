@@ -30,7 +30,7 @@ var postacie = []; //tablica postaci
 
 var getPostacie = function() {
     var postacieTab = [];
-    client.lrange("postacie2", 0, 15, function(err, reply) {
+    client.lrange("postacie", 0, 100, function(err, reply) {
         console.log(reply);
         postacie = reply;
         postacie.forEach(function(entry) {
@@ -227,6 +227,7 @@ sio.sockets.on('connection', function(socket) {
             console.log(data);
         });
 
+        //akcja
         socket.on('odpowiedzialem', function() {
             licznik = licznik + 1;
             console.log("licze" + licznik);
@@ -246,7 +247,7 @@ sio.sockets.on('connection', function(socket) {
             sio.sockets.emit('rec msg', m);
         });
 
-        // zliczanie graczy
+        // zliczanie graczy, sprawdzanie czy jest odpowiednia ilosc, wysylanie odpowiedniego komunikatu jak jest, odpowiedniego jak nie ma
         socket.on('gotowy', function(data) {
             gotowy++;
             userzy[myId].gotowy = true;

@@ -54,8 +54,16 @@ app.controller('chatCtrlr', ['$scope', 'socket',
 
             console.log(data);
             for (var i in data) {
+                var postac = "";
                 //                var postac = data[i].postac !== undefined ? data[i].postacie : "";
-                $('tbody').append("<tr><td>" + iterator + "</td><td>" + data[i].name + "</td><td>" + data[i].postac + "</td></tr>");
+                if (data[i].postac === undefined || data[i].name === $scope.user) {
+                    console.log("test postaci przed gotowe  " + data[i].postac);
+                    postac = "";
+                } else {
+                    console.log("test postaci po gotowe " + data[i].postac);
+                    postac = data[i].postac;
+                }
+                $('tbody').append("<tr><td>" + iterator + "</td><td>" + data[i].name + "</td><td>" + postac + "</td></tr>");
                 iterator++;
             }
 
