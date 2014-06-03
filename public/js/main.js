@@ -19,13 +19,7 @@ app.controller('chatCtrlr', ['$scope', 'socket',
         $scope.id = 0;
 
 
-        $scope.sendMsg = function() {
 
-            if ($scope.msg && $scope.msg.text) {
-                socket.emit('send msg', $scope.msg.text);
-                $scope.msg.text = '';
-            }
-        };
 
         socket.on('rec msg', function(data) {
             $scope.msgs.unshift(data);
@@ -104,11 +98,8 @@ app.controller('chatCtrlr', ['$scope', 'socket',
 
 
 
+        //rozgry
 
-        $scope.zapytalem = function() {
-            $scope.pytasz = false;
-            socket.emit('odpowiedzialem', $scope.id);
-        }
 
         socket.on('pytasz', function(pytajacy) {
             if ($scope.userzy[pytajacy].name == $scope.user) {
@@ -119,11 +110,57 @@ app.controller('chatCtrlr', ['$scope', 'socket',
         });
 
 
+        $scope.sendMsg = function() {
+
+            if ($scope.msg && $scope.msg.text) {
+                socket.emit('send msg', $scope.msg.text);
+                socket.emit('wyslanie pytania', $scope.msg.text)
+                $scope.msg.text = '';
+            }
+        };
+
+
+
+
+        // $scope.zapytalem = function() {
+        //     $scope.pytasz = false;
+        //     socket.emit('odpowiedzialem', $scope.id);
+        // }
+
+        socket.on('pytanie do odpowiedzi', function(pytanie) {
+            console.log(pytanie);
+            $('#pytanie').text(pytanie + "?");
+            $('#buttonTak').removeAttr("disabled");
+            $('#buttonNie').removeAttr("disabled");
+            $('#buttonNieWiem').removeAttr("disabled");
+        });
+
+        $scope.odpTak = function() {
+            socket.emit('odpowiedz', 'tak');
+            blokujOdp();
+        }
+
+        $scope.odpNie = function() {
+            socket.emit('odpowiedz', 'nie');
+            blokujOdp();
+        }
+
+        $scope.odpNieWiem = function() {
+            socket.emit('odpowiedz', 'nieWiem');
+            blokujOdp();
+
+        }
+
+
+        var blokujOdp = function() {
+            $('#buttonTak').attr("disabled", "disabled");
+            $('#buttonNie').attr("disabled", "disabled");
+            $('#buttonNieWiem').attr("disabled", "disabled");
+        }
 
         //wylogowanie po odświeżaniu
         socket.on('wylogowanie', function() {
             window.location = '/login.html';
-
         });
 
         //przyciski Menu
@@ -145,7 +182,7 @@ app.controller('chatCtrlr', ['$scope', 'socket',
             $('#panelOpis').show();
         });
 
-        function czyscMenu() {
+        var czyscMenu = function() {
             $('#panelGra').hide();
             $('#panelOpis').hide();
             $('#panelAutor').hide();

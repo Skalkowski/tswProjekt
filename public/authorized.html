@@ -47,18 +47,20 @@
             <div id="chatLog">
                 <div data-ng-repeat="msg in msgs track by $index">{{msg}}</div>
             </div>
-            <div data-ng-hide='pytasz'>
+            <div data-ng-show='pytasz'>
                 <form action="" data-ng-submit="sendMsg()">
                     <input type="text" data-ng-model="msg.text" maxlength="20">
                 </form>
             </div>
-
-            <div data-ng-show='pytasz'> 
-                <button type="button" class="btn btn-success" data-ng-click='zapytalem()'>TAK</button>
-                <button type="button" class="btn btn-success"  data-ng-click='zapytalem()'>NIE</button>
+            <div id = "pytanie">
+            </div>
+            <div data-ng-hide='pytasz'> 
+                <button id="buttonTak" type="button" class="btn btn-success" data-ng-click='odpTak()' disabled>TAK</button>
+                <button id="buttonNieWiem" type="button" class="btn btn-success"  data-ng-click='odpNieWiem()' disabled>Nie wiem</button>
+                <button id="buttonNie" type="button" class="btn btn-success" data-ng-click='odpNie()' disabled>NIE</button>
             </div>
 
-            <a href="/logout"><button type="button" class="btn btn-lg btn-danger">Wyloguj</button></a>
+            <a href="/logout"><button type="button" class="btn btn-lg btn-danger" >Wyloguj</button></a>
         </div>
 
 

@@ -17,16 +17,20 @@ var gotowy = 0;
 var id = 0;
 var OGRANICZENIE = 2;
 var odpowiedzial = false;
-var licznik = 0;
-
-
+var graczPytajacy = 0;
+var userzy = {}; //zbior userow
+var postacie = []; //tablica postaci
 var history = []; // historia chatu
+var odp = 0; //zliczanie odpowiedzi tak/nie
+var licznikOdp = 0; //licznik zliczajacy ilosc otrzemanych odpowiedzi na pytanie
+
+
+
 //baza danych redis
 var redis = require("redis"),
     client = redis.createClient();
 
-var userzy = {}; //zbior obiektow
-var postacie = []; //tablica postaci
+
 
 //pobieranie postaci z bazy i dodawanie do tabeli postacieTab
 var getPostacie = function() {
@@ -193,6 +197,7 @@ var przydzielPostacie = function() {
 
 sio.sockets.on('connection', function(socket) {
 
+
     var myId = id;
     id++;
     if (userzy[myId]) {
@@ -225,14 +230,68 @@ sio.sockets.on('connection', function(socket) {
 
 
         //akcja
-        socket.on('odpowiedzialem', function() {
-            licznik = licznik + 1;
-            console.log("licze" + licznik);
-            console.log(userzy.length);
-            if (licznik == Object.keys(userzy).length)
-                licznik = 0;
-            sio.sockets.emit('pytasz', licznik);
+        // socket.on('odpowiedzialem', function() {
+        //     licznik = licznik + 1;
+        //     console.log("licze" + licznik);
+        //     console.log(userzy.length);
+        //     if (licznik == Object.keys(userzy).length)
+        //         licznik = 0;
+        //     sio.sockets.emit('pytasz', licznik);00
+        // });
+
+        //wszyts oprócz ten
+        // sio.socket.broadcast('odpowiadac', function() {
+
+        // });
+        // socket.emit(); //ten
+
+
+
+        socket.on('wyslanie pytania', function(pytanie) {
+            console.log(pytanie);
+            socket.broadcast.emit('pytanie do odpowiedzi', pytanie);
         });
+
+
+
+        // socket.on('odpTak', function() {
+        //     odp++;
+        //     licznikOdp++;
+        //     console.log("tak ");
+
+
+        // });
+        // socket.on('odpNie', function() {
+        //     odp--;
+        //     licznikOdp++;
+        //     console.log("nie");
+
+        // });
+
+        socket.on('odpowiedz', function(odpowiedz) {
+            console.log(odpowiedz);
+            if (odpowiedz === "tak") {
+                odp++;
+            } else if (odpowiedz === "nie") {
+                odp--;
+            }
+            licznikOdp++;
+            console.log("ocena: " + odp + " licznik odpowiedzi: " + licznikOdp);
+            if (licznikOdp == Object.keys(userzy).length - 1) {
+                if (odp >= 0) {
+                    console.log("pozytywna odpowiedz");
+                } else
+                    console.log("negatywna odpowiedz");
+                odp = 0;
+                licznikOdp = 0;
+            }
+
+        });
+
+
+
+
+
 
         /** 
          * Chat
@@ -258,7 +317,7 @@ sio.sockets.on('connection', function(socket) {
                 var i = 0;
 
                 console.log("wybralem gracza");
-                sio.sockets.emit('pytasz', licznik);
+                sio.sockets.emit('pytasz', graczPytajacy);
 
 
             } else {
