@@ -15,8 +15,10 @@ app.controller('chatCtrlr', ['$scope', 'socket',
         $scope.msgs = [];
         $scope.user = "";
         $scope.userzy = {};
-        $scope.pytasz = false;
+        $scope.pytasz = true;
+        $scope.odpowiadasz = true;
         $scope.id = 0;
+        pytanie = "";
 
 
 
@@ -103,6 +105,7 @@ app.controller('chatCtrlr', ['$scope', 'socket',
 
         socket.on('pytasz', function(pytajacy) {
             if ($scope.userzy[pytajacy].name == $scope.user) {
+                console.log($scope.user + " pyta");
                 $scope.pytasz = true;
                 $scope.id = pytajacy;
             }
@@ -113,9 +116,11 @@ app.controller('chatCtrlr', ['$scope', 'socket',
         $scope.sendMsg = function() {
 
             if ($scope.msg && $scope.msg.text) {
+                pytanie = $scope.msg.text;
                 socket.emit('send msg', $scope.msg.text);
                 socket.emit('wyslanie pytania', $scope.msg.text)
                 $scope.msg.text = '';
+                $scope.pytasz = false;
             }
         };
 
@@ -129,6 +134,7 @@ app.controller('chatCtrlr', ['$scope', 'socket',
 
         socket.on('pytanie do odpowiedzi', function(pytanie) {
             console.log(pytanie);
+        $scope.odpowiadasz = true;
             $('#pytanie').text(pytanie + "?");
             $('#buttonTak').removeAttr("disabled");
             $('#buttonNie').removeAttr("disabled");
@@ -149,6 +155,7 @@ app.controller('chatCtrlr', ['$scope', 'socket',
             socket.emit('odpowiedz', 'nieWiem');
             blokujOdp();
 
+
         }
 
 
@@ -156,7 +163,23 @@ app.controller('chatCtrlr', ['$scope', 'socket',
             $('#buttonTak').attr("disabled", "disabled");
             $('#buttonNie').attr("disabled", "disabled");
             $('#buttonNieWiem').attr("disabled", "disabled");
+
         }
+
+
+        socket.on('wyslij odpKoncowa', function(odpKoncowa, pytajacy) {
+            if ($scope.userzy[pytajacy].name == $scope.user) {
+                console.log("dostalem odp");
+                $('#odpowiedzi').append("<p>" + pytanie + " " + odpKoncowa + "<p>");
+                socket.emit('nastepnePytanie');
+            }
+
+
+            $scope.$digest();
+        });
+
+
+
 
         //wylogowanie po odświeżaniu
         socket.on('wylogowanie', function() {

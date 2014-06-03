@@ -230,14 +230,14 @@ sio.sockets.on('connection', function(socket) {
 
 
         //akcja
-        // socket.on('odpowiedzialem', function() {
-        //     licznik = licznik + 1;
-        //     console.log("licze" + licznik);
-        //     console.log(userzy.length);
-        //     if (licznik == Object.keys(userzy).length)
-        //         licznik = 0;
-        //     sio.sockets.emit('pytasz', licznik);00
-        // });
+        socket.on('nastepnePytanie', function() {
+            graczPytajacy = graczPytajacy + 1;
+            console.log("licze" + graczPytajacy);
+            if (graczPytajacy == Object.keys(userzy).length)
+                graczPytajacy = 0;
+            sio.sockets.emit('pytasz', graczPytajacy);
+
+        });
 
         //wszyts oprócz ten
         // sio.socket.broadcast('odpowiadac', function() {
@@ -252,24 +252,9 @@ sio.sockets.on('connection', function(socket) {
             socket.broadcast.emit('pytanie do odpowiedzi', pytanie);
         });
 
-
-
-        // socket.on('odpTak', function() {
-        //     odp++;
-        //     licznikOdp++;
-        //     console.log("tak ");
-
-
-        // });
-        // socket.on('odpNie', function() {
-        //     odp--;
-        //     licznikOdp++;
-        //     console.log("nie");
-
-        // });
-
         socket.on('odpowiedz', function(odpowiedz) {
             console.log(odpowiedz);
+            var odpKoncowa;
             if (odpowiedz === "tak") {
                 odp++;
             } else if (odpowiedz === "nie") {
@@ -280,18 +265,17 @@ sio.sockets.on('connection', function(socket) {
             if (licznikOdp == Object.keys(userzy).length - 1) {
                 if (odp >= 0) {
                     console.log("pozytywna odpowiedz");
-                } else
+                    odpKoncowa = 'tak';
+                } else {
                     console.log("negatywna odpowiedz");
+                    odpKoncowa = 'nie';
+                }
+                sio.sockets.emit('wyslij odpKoncowa', odpKoncowa, graczPytajacy);
                 odp = 0;
                 licznikOdp = 0;
             }
 
         });
-
-
-
-
-
 
         /** 
          * Chat
