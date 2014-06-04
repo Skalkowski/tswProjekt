@@ -1,4 +1,4 @@
-var app = angular.module('czatApka', []);
+var app = angular.module('karteczki', []);
 
 app.factory('socket', function() {
     var socket = io.connect('http://' + location.host);
@@ -19,19 +19,6 @@ app.controller('chatCtrlr', ['$scope', 'socket',
         $('#odpowiadaszPanel').hide();
         $scope.id = 0;
         var pytanie = "";
-
-
-
-
-        // socket.on('rec msg', function(data) {
-        //     $scope.msgs.unshift(data);
-        //     $scope.$digest();
-        // });
-
-        // socket.on('history', function(data) {
-        //     $scope.msgs = data;
-        //     $scope.$digest();
-        // });
 
         //wyswietlenie nicku
         $scope.wyswietlNik = function() {
@@ -74,7 +61,7 @@ app.controller('chatCtrlr', ['$scope', 'socket',
 
         // kiedy okreslona liczba graczy bedzie, przycisk jest dostepny
         socket.on('guzikStart', function(data) {
-            if (data === 1) {
+            if (data) {
                 $('#gotowosc').removeAttr("disabled");
             } else {
                 $('#gotowosc').attr("disabled", "disabled");
@@ -174,17 +161,13 @@ app.controller('chatCtrlr', ['$scope', 'socket',
                 if (koncowe) {
                     console.log("dostalem odp na koncowe pytanie");
                     if (odpKoncowa === 'tak') {
-                        // $('#odpowiedzi').append(odp);
                         alert('Zgadles!!!!!');
                     } else {
-                        // $('#odpowiedzi').append(odp);
                         alert('probuj dalej');
                     }
                 } else {
                     console.log("dostalem odp na normalne pytanie");
-                    // $('#odpowiedzi').append(odp);
                 }
-
                 $scope.msgs.unshift(odp);
                 socket.emit('nastepnePytanie');
             }

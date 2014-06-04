@@ -16,11 +16,9 @@ var sio;
 var gotowy = 0;
 var id = 0;
 var OGRANICZENIE = 2;
-
 var graczPytajacy = 0;
 var userzy = {}; //zbior userow
 var postacie = []; //tablica postaci
-var historyy = []; // historia chatu
 var odp = 0; //zliczanie odpowiedzi tak/nie
 var licznikOdp = 0; //licznik zliczajacy ilosc otrzemanych odpowiedzi na pytanie
 var ostatecznePytanie = false;
@@ -30,24 +28,6 @@ var wyszliWgrze = [];
 //baza danych redis
 var redis = require("redis"),
     client = redis.createClient();
-
-
-
-//pobieranie postaci z bazy i dodawanie do tabeli postacieTab
-var getPostacie = function() {
-    var postacieTab = [];
-    client.lrange("postacie", 0, 100, function(err, reply) {
-        console.log(err);
-        postacie = reply;
-    });
-    var i = 0;
-    for (var j = 0; j <= postacie.length; j++) {
-        postacieTab[i] = postacie[j];
-        i++;
-    }
-
-    return postacieTab;
-};
 
 // Konfiguracja passport.js
 passport.serializeUser(function(user, done) {
@@ -112,17 +92,7 @@ app.use(express.urlencoded());
 app.use(express.multipart());
 
 app.get('/', function(req, res) {
-    var body = '<html><body>';
-    var username;
-    if (req.user) {
-        username = req.user.username;
-        body += '<p>Jesteś zalogowany jako „' + username + '”</p>';
-        body += '<a href="/logout">Wyloguj</a>';
-    } else {
-        body += '<a href="/login">Zaloguj</a>';
-    }
-    body += '</body></html>';
-    res.send(body);
+    res.redirect('/login');
 });
 
 app.get('/login', function(req, res) {
@@ -146,6 +116,7 @@ app.get('/logout', function(req, res) {
     res.redirect('/login');
 });
 
+//dodanie nowego konta do bazy klucz-wartosc
 app.post('/signup', function(req, res) {
     var username = req.body.username;
     var password = req.body.password;
@@ -198,6 +169,22 @@ var przydzielPostacie = function() {
     }
 };
 
+//pobieranie postaci z bazy i dodawanie do tabeli postacieTab
+var getPostacie = function() {
+    var postacieTab = [];
+    client.lrange("postacie", 0, 100, function(err, reply) {
+        console.log(err);
+        postacie = reply;
+    });
+    var i = 0;
+    for (var j = 0; j < postacie.length; j++) {
+        postacieTab[i] = postacie[j];
+        i++;
+    }
+
+    return postacieTab;
+};
+
 sio.sockets.on('connection', function(socket) {
 
 
@@ -221,12 +208,10 @@ sio.sockets.on('connection', function(socket) {
             delete userzy[myId];
             console.log(userzy);
             if (Object.keys(userzy).length < OGRANICZENIE) {
-                sio.sockets.emit('guzikStart', 2);
+                sio.sockets.emit('guzikStart', false);
             }
             sio.sockets.emit('gracze', userzy);
         });
-
-        //  socket.emit('history', history);
 
         //wyslanie do klienta polecenia drukowania tabelki z graczami
         sio.sockets.emit('gracze', userzy);
@@ -300,17 +285,7 @@ sio.sockets.on('connection', function(socket) {
 
         });
 
-        /** 
-         * Chat
-         */
-        socket.on('send msg', function(data) {
-            var m = userzy[myId].name + ": " + data;
-            console.log(m);
-            historyy.unshift(m);
-            sio.sockets.emit('rec msg', m);
-        });
-
-        // zliczanie graczy, sprawdzanie czy jest odpowiednia ilosc, wysylanie odpowiedniego komunikatu jak jest, odpowiedniego jak nie ma
+        // zliczanie graczy, którzy są gotowi, sprawdzanie czy jest odpowiednia ilosc, wysylanie odpowiedniego komunikatu jak jest, odpowiedniego jak nie ma
         socket.on('gotowy', function() {
             gotowy++;
             userzy[myId].gotowy = true;
@@ -331,12 +306,11 @@ sio.sockets.on('connection', function(socket) {
             }
         });
 
-        //sprawdzenie czy jest więcej niż x osob
+        //sprawdzenie czy jest więcej niż x osob, jeśli jest to odblokowanie przyciskow gotowy
         if (Object.keys(userzy).length >= OGRANICZENIE) {
             console.log("jest przynajmniej: " + OGRANICZENIE + " graczy");
-            sio.sockets.emit('guzikStart', 1);
+            sio.sockets.emit('guzikStart', true);
         }
-
     } else {
         socket.emit('wylogowanie');
     }
