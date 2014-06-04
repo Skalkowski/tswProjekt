@@ -229,7 +229,7 @@ sio.sockets.on('connection', function(socket) {
 
 
 
-        //akcja
+        //otrzymanie od klienta sygnalu o tym ze ma byc nastepne pytanie
         socket.on('nastepnePytanie', function() {
             graczPytajacy = graczPytajacy + 1;
             console.log("licze" + graczPytajacy);
@@ -239,17 +239,12 @@ sio.sockets.on('connection', function(socket) {
 
         });
 
-        //wszyts oprócz ten
-        // sio.socket.broadcast('odpowiadac', function() {
-
-        // });
-        // socket.emit(); //ten
-
 
 
         socket.on('wyslanie pytania', function(pytanie) {
-            console.log(pytanie);
-            socket.broadcast.emit('pytanie do odpowiedzi', pytanie);
+            var pytanie2 = userzy[myId].postac + ": " + pytanie;
+            console.log(pytanie2);
+            socket.broadcast.emit('pytanie do odpowiedzi', pytanie2);
         });
 
         socket.on('odpowiedz', function(odpowiedz) {

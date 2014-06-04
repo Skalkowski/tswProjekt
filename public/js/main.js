@@ -15,8 +15,8 @@ app.controller('chatCtrlr', ['$scope', 'socket',
         $scope.msgs = [];
         $scope.user = "";
         $scope.userzy = {};
-        $scope.pytasz = true;
-        $scope.odpowiadasz = true;
+        $('#pytaszPanel').hide();
+        $('#odpowiadaszPanel').hide();
         $scope.id = 0;
         pytanie = "";
 
@@ -106,7 +106,7 @@ app.controller('chatCtrlr', ['$scope', 'socket',
         socket.on('pytasz', function(pytajacy) {
             if ($scope.userzy[pytajacy].name == $scope.user) {
                 console.log($scope.user + " pyta");
-                $scope.pytasz = true;
+                $('#pytaszPanel').show();
                 $scope.id = pytajacy;
             }
             $scope.$digest();
@@ -120,21 +120,18 @@ app.controller('chatCtrlr', ['$scope', 'socket',
                 socket.emit('send msg', $scope.msg.text);
                 socket.emit('wyslanie pytania', $scope.msg.text)
                 $scope.msg.text = '';
-                $scope.pytasz = false;
+                $('#pytaszPanel').hide();
             }
         };
 
 
 
 
-        // $scope.zapytalem = function() {
-        //     $scope.pytasz = false;
-        //     socket.emit('odpowiedzialem', $scope.id);
-        // }
+
 
         socket.on('pytanie do odpowiedzi', function(pytanie) {
             console.log(pytanie);
-        $scope.odpowiadasz = true;
+            $('#odpowiadaszPanel').show();
             $('#pytanie').text(pytanie + "?");
             $('#buttonTak').removeAttr("disabled");
             $('#buttonNie').removeAttr("disabled");
@@ -144,6 +141,7 @@ app.controller('chatCtrlr', ['$scope', 'socket',
         $scope.odpTak = function() {
             socket.emit('odpowiedz', 'tak');
             blokujOdp();
+
         }
 
         $scope.odpNie = function() {
@@ -163,6 +161,7 @@ app.controller('chatCtrlr', ['$scope', 'socket',
             $('#buttonTak').attr("disabled", "disabled");
             $('#buttonNie').attr("disabled", "disabled");
             $('#buttonNieWiem').attr("disabled", "disabled");
+            $('#odpowiadaszPanel').hide();
 
         }
 
