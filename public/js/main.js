@@ -18,20 +18,20 @@ app.controller('chatCtrlr', ['$scope', 'socket',
         $('#pytaszPanel').hide();
         $('#odpowiadaszPanel').hide();
         $scope.id = 0;
-        pytanie = "";
+        var pytanie = "";
 
 
 
 
-        socket.on('rec msg', function(data) {
-            $scope.msgs.unshift(data);
-            $scope.$digest();
-        });
+        // socket.on('rec msg', function(data) {
+        //     $scope.msgs.unshift(data);
+        //     $scope.$digest();
+        // });
 
-        socket.on('history', function(data) {
-            $scope.msgs = data;
-            $scope.$digest();
-        });
+        // socket.on('history', function(data) {
+        //     $scope.msgs = data;
+        //     $scope.$digest();
+        // });
 
         //wyswietlenie nicku
         $scope.wyswietlNik = function() {
@@ -55,8 +55,8 @@ app.controller('chatCtrlr', ['$scope', 'socket',
             $('tbody').empty();
             var iterator = 1;
 
-            console.log(data);
-            for (var i in data) {
+            console.log("Do poprawy: " + data);
+            for (var i = 0; i < Object.keys(data).length; i++) {
                 var postac;
                 if (data[i].postac === undefined || data[i].name === $scope.user) {
                     console.log("test postaci przed gotowe  " + data[i].postac);
@@ -90,13 +90,13 @@ app.controller('chatCtrlr', ['$scope', 'socket',
         //czekanie az wszyscy portwierdza
         socket.on('czekanie', function(ilosc) {
             $('#panelGotowosci').append("<p> Czekamy na " + ilosc + "graczy </p>");
-        })
+        });
 
         //start gry po potwierdzeniu gotowowości przez wszystkich graczy
         socket.on('startGry', function() {
             $('#panelGotowosci').empty();
             $('#gra').show();
-        })
+        });
 
 
 
@@ -104,6 +104,7 @@ app.controller('chatCtrlr', ['$scope', 'socket',
 
 
         socket.on('pytasz', function(pytajacy) {
+            console.log(pytajacy);
             if ($scope.userzy[pytajacy].name == $scope.user) {
                 console.log($scope.user + " pyta");
                 $('input[name=ostPytanie]').attr('checked', false);
@@ -134,10 +135,6 @@ app.controller('chatCtrlr', ['$scope', 'socket',
         };
 
 
-
-
-
-
         socket.on('pytanie do odpowiedzi', function(pytanie) {
             console.log(pytanie);
             $('#odpowiadaszPanel').show();
@@ -150,20 +147,17 @@ app.controller('chatCtrlr', ['$scope', 'socket',
         $scope.odpTak = function() {
             socket.emit('odpowiedz', 'tak');
             blokujOdp();
-
-        }
+        };
 
         $scope.odpNie = function() {
             socket.emit('odpowiedz', 'nie');
             blokujOdp();
-        }
+        };
 
         $scope.odpNieWiem = function() {
             socket.emit('odpowiedz', 'nieWiem');
             blokujOdp();
-
-
-        }
+        };
 
 
         var blokujOdp = function() {
@@ -171,34 +165,31 @@ app.controller('chatCtrlr', ['$scope', 'socket',
             $('#buttonNie').attr("disabled", "disabled");
             $('#buttonNieWiem').attr("disabled", "disabled");
             $('#odpowiadaszPanel').hide();
+        };
 
-        }
-
-
+        //odebranie odpowiedzi koncowej
         socket.on('wyslij odpKoncowa', function(odpKoncowa, pytajacy, koncowe) {
             if ($scope.userzy[pytajacy].name == $scope.user) {
+                var odp = pytanie + " " + odpKoncowa;
                 if (koncowe) {
                     console.log("dostalem odp na koncowe pytanie");
                     if (odpKoncowa === 'tak') {
-                        $('#odpowiedzi').append("<p>" + pytanie + " " + odpKoncowa + "<p>");
+                        // $('#odpowiedzi').append(odp);
                         alert('Zgadles!!!!!');
                     } else {
-                        $('#odpowiedzi').append("<p>" + pytanie + " " + odpKoncowa + "<p>");
+                        // $('#odpowiedzi').append(odp);
                         alert('probuj dalej');
                     }
                 } else {
                     console.log("dostalem odp na normalne pytanie");
-                    $('#odpowiedzi').append("<p>" + pytanie + " " + odpKoncowa + "<p>");
+                    // $('#odpowiedzi').append(odp);
                 }
+
+                $scope.msgs.unshift(odp);
                 socket.emit('nastepnePytanie');
             }
-
-
             $scope.$digest();
         });
-
-
-
 
         //wylogowanie po odświeżaniu
         socket.on('wylogowanie', function() {
@@ -231,6 +222,6 @@ app.controller('chatCtrlr', ['$scope', 'socket',
             $('#autorMenu').removeClass();
             $('#opisMenu').removeClass();
             $('#graMenu').removeClass();
-        }
+        };
     }
 ]);

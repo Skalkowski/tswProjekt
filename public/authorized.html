@@ -48,10 +48,10 @@
                 <div data-ng-repeat="msg in msgs track by $index">{{msg}}</div>
             </div>
             <div id='pytaszPanel'>
-                <form action="" data-ng-submit="sendMsg()">
+                <form data-ng-submit="sendMsg()">
                     <input type="text" data-ng-model="msg.text">
                 </form>
-                <input id="ostPyt" type="checkbox" name="ostPytanie">Zgaduje postać</input>
+                <input type="checkbox" name="ostPytanie"/>Zgaduje postać
             </div>
             
             <div id='odpowiadaszPanel'> 
