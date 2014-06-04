@@ -106,6 +106,7 @@ app.controller('chatCtrlr', ['$scope', 'socket',
         socket.on('pytasz', function(pytajacy) {
             if ($scope.userzy[pytajacy].name == $scope.user) {
                 console.log($scope.user + " pyta");
+                $('input[name=ostPytanie]').attr('checked', false);
                 $('#pytaszPanel').show();
                 $scope.id = pytajacy;
             }
@@ -118,9 +119,17 @@ app.controller('chatCtrlr', ['$scope', 'socket',
             if ($scope.msg && $scope.msg.text) {
                 pytanie = $scope.msg.text;
                 socket.emit('send msg', $scope.msg.text);
-                socket.emit('wyslanie pytania', $scope.msg.text)
-                $scope.msg.text = '';
+                socket.emit('wyslanie pytania', $scope.msg.text);
                 $('#pytaszPanel').hide();
+                if ($('input[name=ostPytanie]').is(':checked')) {
+                    console.log("zadalem ostateczne pytanie!!!!!!!");
+                    socket.emit('wyslanie pytania', $scope.msg.text, true);
+                } else {
+                    socket.emit('wyslanie pytania', $scope.msg.text, false);
+                    console.log("zadalem normalne pytanie");
+
+                }
+                $scope.msg.text = '';
             }
         };
 
@@ -166,10 +175,21 @@ app.controller('chatCtrlr', ['$scope', 'socket',
         }
 
 
-        socket.on('wyslij odpKoncowa', function(odpKoncowa, pytajacy) {
+        socket.on('wyslij odpKoncowa', function(odpKoncowa, pytajacy, koncowe) {
             if ($scope.userzy[pytajacy].name == $scope.user) {
-                console.log("dostalem odp");
-                $('#odpowiedzi').append("<p>" + pytanie + " " + odpKoncowa + "<p>");
+                if (koncowe) {
+                    console.log("dostalem odp na koncowe pytanie");
+                    if (odpKoncowa === 'tak') {
+                        $('#odpowiedzi').append("<p>" + pytanie + " " + odpKoncowa + "<p>");
+                        alert('Zgadles!!!!!');
+                    } else {
+                        $('#odpowiedzi').append("<p>" + pytanie + " " + odpKoncowa + "<p>");
+                        alert('probuj dalej');
+                    }
+                } else {
+                    console.log("dostalem odp na normalne pytanie");
+                    $('#odpowiedzi').append("<p>" + pytanie + " " + odpKoncowa + "<p>");
+                }
                 socket.emit('nastepnePytanie');
             }
 

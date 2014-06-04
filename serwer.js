@@ -23,6 +23,7 @@ var postacie = []; //tablica postaci
 var history = []; // historia chatu
 var odp = 0; //zliczanie odpowiedzi tak/nie
 var licznikOdp = 0; //licznik zliczajacy ilosc otrzemanych odpowiedzi na pytanie
+var ostatecznePytanie = false;
 
 
 
@@ -240,13 +241,21 @@ sio.sockets.on('connection', function(socket) {
         });
 
 
-
-        socket.on('wyslanie pytania', function(pytanie) {
+        //otrzymanie pytania od klienta
+        socket.on('wyslanie pytania', function(pytanie, jakie) {
+            console.log("Pytanie tu: " + pytanie);
             var pytanie2 = userzy[myId].postac + ": " + pytanie;
-            console.log(pytanie2);
+            if (jakie) {
+                console.log("ostateczne pytanie: " + pytanie2);
+                ostatecznePytanie = true;
+            } else {
+                console.log("normalne pytanie: " + pytanie2);
+                ostatecznePytanie = false;
+            }
             socket.broadcast.emit('pytanie do odpowiedzi', pytanie2);
         });
 
+        //otrzymalem odp od klienta
         socket.on('odpowiedz', function(odpowiedz) {
             console.log(odpowiedz);
             var odpKoncowa;
@@ -265,7 +274,11 @@ sio.sockets.on('connection', function(socket) {
                     console.log("negatywna odpowiedz");
                     odpKoncowa = 'nie';
                 }
-                sio.sockets.emit('wyslij odpKoncowa', odpKoncowa, graczPytajacy);
+                if (ostatecznePytanie) {
+                    sio.sockets.emit('wyslij odpKoncowa', odpKoncowa, graczPytajacy, true);
+                } else {
+                    sio.sockets.emit('wyslij odpKoncowa', odpKoncowa, graczPytajacy, false);
+                }
                 odp = 0;
                 licznikOdp = 0;
             }
