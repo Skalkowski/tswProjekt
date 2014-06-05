@@ -17,17 +17,15 @@ app.controller('chatCtrlr', ['$scope', 'socket',
         $scope.userzy = {};
         $('#pytaszPanel').hide();
         $('#odpowiadaszPanel').hide();
+        $('#czekaniePoOdp').hide();
+
         $scope.id = 0;
         var pytanie = "";
-
+        var pominiety = 0;
         //wyswietlenie nicku
         $scope.wyswietlNik = function() {
             return $scope.user;
         };
-
-
-
-
 
         //odebranie i przypisanie swojego loginu
         socket.on('username', function(data) {
@@ -42,9 +40,9 @@ app.controller('chatCtrlr', ['$scope', 'socket',
             $('tbody').empty();
             var iterator = 1;
 
-            console.log("Do poprawy: " + data);
             for (var i = 0; i < Object.keys(data).length; i++) {
                 var postac;
+
                 if (data[i].postac === undefined || data[i].name === $scope.user) {
                     console.log("test postaci przed gotowe  " + data[i].postac);
                     postac = "";
@@ -54,6 +52,7 @@ app.controller('chatCtrlr', ['$scope', 'socket',
                 }
                 $('tbody').append("<tr><td>" + iterator + "</td><td>" + data[i].name + "</td><td>" + postac + "</td></tr>");
                 iterator++;
+
             }
 
             $scope.$digest();
@@ -72,8 +71,9 @@ app.controller('chatCtrlr', ['$scope', 'socket',
         //po nacisnieciu start wysyłanie info do servera
         $('#gotowosc').click(function() {
             socket.emit('gotowy');
-
+            $('#gotowosc').attr("disabled", "disabled");
         });
+
         //czekanie az wszyscy portwierdza
         socket.on('czekanie', function(ilosc) {
             $('#panelGotowosci').append("<p> Czekamy na " + ilosc + "graczy </p>");
@@ -85,11 +85,7 @@ app.controller('chatCtrlr', ['$scope', 'socket',
             $('#gra').show();
         });
 
-
-
-        //rozgry
-
-
+        //dostaje sygnal od serwera o zadanie pytania, jesli moja kolej to zadaje
         socket.on('pytasz', function(pytajacy) {
             console.log(pytajacy);
             if ($scope.userzy[pytajacy].name == $scope.user) {
@@ -101,12 +97,10 @@ app.controller('chatCtrlr', ['$scope', 'socket',
             $scope.$digest();
         });
 
-
+        //wyslanie pytania do serwera; sprawdzenie czy zgadywanie postaci
         $scope.sendMsg = function() {
-
             if ($scope.msg && $scope.msg.text) {
                 pytanie = $scope.msg.text;
-                socket.emit('send msg', $scope.msg.text);
                 socket.emit('wyslanie pytania', $scope.msg.text);
                 $('#pytaszPanel').hide();
                 if ($('input[name=ostPytanie]').is(':checked')) {
@@ -115,44 +109,43 @@ app.controller('chatCtrlr', ['$scope', 'socket',
                 } else {
                     socket.emit('wyslanie pytania', $scope.msg.text, false);
                     console.log("zadalem normalne pytanie");
-
                 }
                 $scope.msg.text = '';
+
             }
         };
 
-
+        //otrzymanie pytania na ktore mam odpowiedziec
         socket.on('pytanie do odpowiedzi', function(pytanie) {
             console.log(pytanie);
             $('#odpowiadaszPanel').show();
             $('#pytanie').text(pytanie + "?");
-            $('#buttonTak').removeAttr("disabled");
-            $('#buttonNie').removeAttr("disabled");
-            $('#buttonNieWiem').removeAttr("disabled");
+        });
+
+        socket.on('odp kiedy wyszedl', function() {
+            socket.emit('odpowiedz', 'nieWiem');
+            console.log('wyslalem po usunieciu')
         });
 
         $scope.odpTak = function() {
             socket.emit('odpowiedz', 'tak');
-            blokujOdp();
+            odpUkr()
         };
 
         $scope.odpNie = function() {
             socket.emit('odpowiedz', 'nie');
-            blokujOdp();
+            odpUkr()
         };
 
         $scope.odpNieWiem = function() {
             socket.emit('odpowiedz', 'nieWiem');
-            blokujOdp();
+            odpUkr()
         };
+        var odpUkr = function() {
+            $('#odpowiadaszPanel').hide("slow");
+            $('#czekaniePoOdp').show("slow");
+        }
 
-
-        var blokujOdp = function() {
-            $('#buttonTak').attr("disabled", "disabled");
-            $('#buttonNie').attr("disabled", "disabled");
-            $('#buttonNieWiem').attr("disabled", "disabled");
-            $('#odpowiadaszPanel').hide();
-        };
 
         //odebranie odpowiedzi koncowej
         socket.on('wyslij odpKoncowa', function(odpKoncowa, pytajacy, koncowe) {
@@ -183,25 +176,25 @@ app.controller('chatCtrlr', ['$scope', 'socket',
         $('#autorMenu').click(function() {
             czyscMenu();
             $('#autorMenu').addClass("active");
-            $('#panelAutor').show();
+            $('#panelAutor').show("slow");
         });
 
         $('#graMenu').click(function() {
             czyscMenu();
             $('#graMenu').addClass("active");
-            $('#panelGra').show();
+            $('#panelGra').show("slow");
 
         });
         $('#opisMenu').click(function() {
             czyscMenu();
             $('#opisMenu').addClass("active");
-            $('#panelOpis').show();
+            $('#panelOpis').show("slow");
         });
 
         var czyscMenu = function() {
-            $('#panelGra').hide();
-            $('#panelOpis').hide();
-            $('#panelAutor').hide();
+            $('#panelGra').hide("slow");
+            $('#panelOpis').hide("slow");
+            $('#panelAutor').hide("slow");
             $('#autorMenu').removeClass();
             $('#opisMenu').removeClass();
             $('#graMenu').removeClass();
