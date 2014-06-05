@@ -22,9 +22,7 @@ var postacie = []; //tablica postaci
 var odp = 0; //zliczanie odpowiedzi tak/nie
 var licznikOdp = 0; //licznik zliczajacy ilosc otrzemanych odpowiedzi na pytanie
 var ostatecznePytanie = false;
-// var wyszliWgrze = [];
-var pozaGra = [];
-var ostateczniePytajacy; //
+var wyszliWgrze = [];
 
 
 //baza danych redis
@@ -44,7 +42,7 @@ passport.use(new LocalStrategy(
     function(username, password, done) {
         var zalogowany = false;
         console.log("Sprawdzam usera " + username);
-        for (var i in userzy) {
+        for (var i = 0; i <= userzy; i++) {
             if (userzy[i].name === username) {
                 zalogowany = true;
                 console.log("juz zalogowany");
@@ -192,12 +190,9 @@ var getPostacie = function() {
 
 
 sio.sockets.on('connection', function(socket) {
-
-
     var myId = id;
     id++;
     if (userzy[myId]) {
-
         //wysła do klienta jego login
         socket.emit('username', userzy[myId].name);
 
@@ -208,8 +203,7 @@ sio.sockets.on('connection', function(socket) {
                 gotowy--;
                 id--;
                 console.log('usuniety user');
-                pozaGra[myId] = true;
-                //                wyszliWgrze[myId] = 1;
+                wyszliWgrze[myId] = 1;
             }
 
             delete userzy[myId];
@@ -226,45 +220,23 @@ sio.sockets.on('connection', function(socket) {
         //otrzymanie od klienta sygnalu o tym ze ma byc nastepne pytanie
 
 
-        // socket.on('nastepnePytanie', function() {
-        //     graczPytajacy = graczPytajacy + 1;
-        //     var flaga = false;
-
-        //     if (graczPytajacy >= Object.keys(userzy).length) {
-        //         graczPytajacy = 0;
-        //         flaga = true;
-        //     }
-
-        //     while (wyszliWgrze[graczPytajacy] === 1) {
-        //         graczPytajacy++;
-
-        //         if (graczPytajacy >= Object.keys(userzy).length)
-        //             graczPytajacy = 0;
-        //     }
-
-        //     console.log("gracz pytajacy " + graczPytajacy + " " + Object.keys(userzy).length);
-        //     sio.sockets.emit('pytasz', graczPytajacy);
-        // });
-
         socket.on('nastepnePytanie', function() {
-            ostateczniePytajacy = szukajNastepnego();
-            console.log("Pytam gracza: " + ostateczniePytajacy);
-            while (pozaGra[graczPytajacy]) {
-                console.log("wszedlem do while");
-                ostateczniePytajacy = szukajNastepnego();
-            };
+            console.log('nastepny zadaje pytanie, ilosc graczy: ' + Object.keys(userzy).length);
+            graczPytajacy = graczPytajacy + 1;
 
+            if (graczPytajacy >= Object.keys(userzy).length) {
+                graczPytajacy = 0;
 
-            sio.sockets.emit('pytasz', ostateczniePytajacy);
+            }
+            while (wyszliWgrze[graczPytajacy] === 1) {
+                graczPytajacy++;
+                if (graczPytajacy >= Object.keys(userzy).length)
+                    graczPytajacy = 0;
+            }
+            console.log("gracz pytajacy " + graczPytajacy + " " + Object.keys(userzy).length);
+            sio.sockets.emit('pytasz', graczPytajacy);
         });
 
-
-        var szukajNastepnego = function() {
-            graczPytajacy = graczPytajacy + 1;
-            if (graczPytajacy >= Object.keys(userzy).length)
-                graczPytajacy = 0;
-            return graczPytajacy;
-        };
 
         //otrzymanie pytania od klienta
         socket.on('wyslanie pytania', function(pytanie, jakie) {
@@ -303,11 +275,15 @@ sio.sockets.on('connection', function(socket) {
                     console.log("niewiadomo");
                     odpKoncowa = 'nie wiem';
                 }
-                if (ostatecznePytanie) {
+                if (ostatecznePytanie && odpKoncowa === 'tak') {
+                    sio.sockets.emit('koniec gry', odpKoncowa, graczPytajacy, true);
+                    wyszliWgrze = [];
+                    graczPytajacy = 0;
+                } else if (ostatecznePytanie)
                     sio.sockets.emit('wyslij odpKoncowa', odpKoncowa, graczPytajacy, true);
-                } else {
+                else
                     sio.sockets.emit('wyslij odpKoncowa', odpKoncowa, graczPytajacy, false);
-                }
+
                 odp = 0;
                 licznikOdp = 0;
             }

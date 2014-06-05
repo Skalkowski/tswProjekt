@@ -19,9 +19,9 @@ app.controller('chatCtrlr', ['$scope', 'socket',
         $('#odpowiadaszPanel').hide();
         $('#czekaniePoOdp').hide();
 
+
         $scope.id = 0;
         var pytanie = "";
-        var pominiety = 0;
         //wyswietlenie nicku
         $scope.wyswietlNik = function() {
             return $scope.user;
@@ -45,7 +45,7 @@ app.controller('chatCtrlr', ['$scope', 'socket',
 
                 if (data[i].postac === undefined || data[i].name === $scope.user) {
                     console.log("test postaci przed gotowe  " + data[i].postac);
-                    postac = "";
+                    postac = "Zgaduj ;)";
                 } else {
                     console.log("test postaci po gotowe " + data[i].postac);
                     postac = data[i].postac;
@@ -68,33 +68,38 @@ app.controller('chatCtrlr', ['$scope', 'socket',
             $scope.$digest();
         });
 
-        //po nacisnieciu start wysyłanie info do servera
+        //po nacisnieciu gotowy wysyłanie info do servera
         $('#gotowosc').click(function() {
             socket.emit('gotowy');
             $('#gotowosc').attr("disabled", "disabled");
         });
 
-        //czekanie az wszyscy portwierdza
+        //czekanie az wszyscy portwierdza przez przycisk gotowy
         socket.on('czekanie', function(ilosc) {
             $('#panelGotowosci').append("<p> Czekamy na " + ilosc + "graczy </p>");
         });
 
         //start gry po potwierdzeniu gotowowości przez wszystkich graczy
         socket.on('startGry', function() {
-            $('#panelGotowosci').empty();
+            $('#panelGotowosci').hide();
             $('#gra').show();
         });
 
         //dostaje sygnal od serwera o zadanie pytania, jesli moja kolej to zadaje
         socket.on('pytasz', function(pytajacy) {
+            $('#czekaniePoOdp').show();
             console.log(pytajacy);
+            $('#czekaniePoOdp').text('Zadaj pytanie');
             if ($scope.userzy[pytajacy].name == $scope.user) {
+                $('#czekaniePoOdp').text('Napisz pytanie');
                 console.log($scope.user + " pyta");
                 $('input[name=ostPytanie]').attr('checked', false);
                 $('#pytaszPanel').show();
                 $scope.id = pytajacy;
-            }
+            } else
+                $('#czekaniePoOdp').text('Czekaj na pytanie');
             $scope.$digest();
+
         });
 
         //wyslanie pytania do serwera; sprawdzenie czy zgadywanie postaci
@@ -111,6 +116,7 @@ app.controller('chatCtrlr', ['$scope', 'socket',
                     console.log("zadalem normalne pytanie");
                 }
                 $scope.msg.text = '';
+                $('#czekaniePoOdp').text('Czekaj na odpowiedzi');
 
             }
         };
@@ -122,49 +128,53 @@ app.controller('chatCtrlr', ['$scope', 'socket',
             $('#pytanie').text(pytanie + "?");
         });
 
-        socket.on('odp kiedy wyszedl', function() {
-            socket.emit('odpowiedz', 'nieWiem');
-            console.log('wyslalem po usunieciu')
-        });
 
         $scope.odpTak = function() {
             socket.emit('odpowiedz', 'tak');
-            odpUkr()
+            odpUkr();
         };
 
         $scope.odpNie = function() {
             socket.emit('odpowiedz', 'nie');
-            odpUkr()
+            odpUkr();
         };
 
         $scope.odpNieWiem = function() {
             socket.emit('odpowiedz', 'nieWiem');
-            odpUkr()
+            odpUkr();
         };
         var odpUkr = function() {
             $('#odpowiadaszPanel').hide("slow");
             $('#czekaniePoOdp').show("slow");
-        }
+        };
 
 
         //odebranie odpowiedzi koncowej
         socket.on('wyslij odpKoncowa', function(odpKoncowa, pytajacy, koncowe) {
-            if ($scope.userzy[pytajacy].name == $scope.user) {
+            if ($scope.userzy[pytajacy].name === $scope.user) {
                 var odp = pytanie + " " + odpKoncowa;
                 if (koncowe) {
                     console.log("dostalem odp na koncowe pytanie");
-                    if (odpKoncowa === 'tak') {
-                        alert('Zgadles!!!!!');
-                    } else {
-                        alert('probuj dalej');
-                    }
+
+                    alert('probuj dalej');
+
                 } else {
                     console.log("dostalem odp na normalne pytanie");
                 }
                 $scope.msgs.unshift(odp);
                 socket.emit('nastepnePytanie');
+                $('#czekaniePoOdp').text('Czekaj na pytanie');
             }
             $scope.$digest();
+        });
+
+        //koniec gry
+        socket.on("koniec gry", function(odpKoncowa, pytajacy) {
+            if ($scope.userzy[pytajacy].name === $scope.user) {
+                alert("Wygraleś!");
+            } else
+                alert("Przegrales");
+            window.location = '/login.html';
         });
 
         //wylogowanie po odświeżaniu

@@ -14,98 +14,105 @@
 </head>
 
 <body data-ng-app="karteczki">
-    <div data-ng-controller="chatCtrlr">
+    <div id ='all'>
+        <div data-ng-controller="chatCtrlr">
 
-        <div class="navbar navbar-fixed-top navbar-inverse" role="navigation">
-            <div class="container">
-                <div class="navbar-header">
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                       <span class="sr-only">Toggle navigation</span>
-                       <span class="icon-bar"></span>
-                       <span class="icon-bar"></span>
-                       <span class="icon-bar"></span>
-                   </button>
-                   <div class="navbar-brand">{{wyswietlNik()}}</div>
-               </div>
-               <div class="collapse navbar-collapse">
-                <ul class="nav navbar-nav">
-                    <li class="active" id='graMenu'><a href="#">Gra</a></li>
-                    <li class="" id='opisMenu'><a href="">Opis</a></li>
-                    <li class="" id='autorMenu'><a href="">Autor</a></li>
-                </ul>
-            </div><!-- /.nav-collapse -->
-        </div><!-- /.container -->
-    </div><!-- /.navbar -->
-    <br />
-    <div id='czekaniePoOdp'>
-        <p class="bg-success">Czekaj na następne pytanie :)</p>
-    </div>
-   
-    <div id='panelGra'>
-
-        <!-- przycisk potwierdzajacy gotowosc do gry -->
-        <div id="panelGotowosci"> 
-            <button type="button" class="btn btn-success" id = "gotowosc" >Start</button>
+            <div class="navbar navbar-fixed-top navbar-inverse" role="navigation">
+                <div class="container">
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                           <span class="sr-only">Toggle navigation</span>
+                           <span class="icon-bar"></span>
+                           <span class="icon-bar"></span>
+                           <span class="icon-bar"></span>
+                       </button>
+                       <div class="navbar-brand">{{wyswietlNik()}}</div>
+                   </div>
+                   <div class="collapse navbar-collapse">
+                    <ul class="nav navbar-nav">
+                        <li class="active" id='graMenu'><a href="#">Gra</a></li>
+                        <li class="" id='opisMenu'><a href="">Opis</a></li>
+                        <li class="" id='autorMenu'><a href="">Autor</a></li>
+                    </ul>
+                </div><!-- /.nav-collapse -->
+            </div><!-- /.container -->
+        </div><!-- /.navbar -->
+        <br />
+        <div >
+            <p id='czekaniePoOdp' class="bg-success">Czekaj na następne pytanie :)</p>
         </div>
-        <!-- chat gry -->
-        <div id="gra">
-            <div id="chatLog">
-                <div data-ng-repeat="msg in msgs track by $index">{{msg}}</div>
-            </div>
-            <div id='pytaszPanel'>
-                <form data-ng-submit="sendMsg()">
-                    <input type="text" data-ng-model="msg.text">
-                </form>
-                <input type="checkbox" name="ostPytanie"/>Zgaduje postać
-            </div>
-            
-            <div id='odpowiadaszPanel'> 
-                <div id = "pytanie">
+
+        <div id='panelGra'>
+
+
+            <!-- chat gry -->
+            <div id="gra">
+                <div id="chatLog">
+                    <div data-ng-repeat="msg in msgs track by $index">{{msg}}</div>
                 </div>
-                <button id="buttonTak" type="button" class="btn btn-success" data-ng-click='odpTak()'>TAK</button>
-                <button id="buttonNieWiem" type="button" class="btn btn-success"  data-ng-click='odpNieWiem()'>Nie wiem</button>
-                <button id="buttonNie" type="button" class="btn btn-success" data-ng-click='odpNie()'>NIE</button>
+                <div id='pytaszPanel'>
+                    <form data-ng-submit="sendMsg()">
+                        <input type="text" data-ng-model="msg.text">
+                    </form>
+                    <input type="checkbox" name="ostPytanie"/>Zgaduje postać
+                </div>
+
+                <div id='odpowiadaszPanel'> 
+                    <div id = "pytanie">
+                    </div>
+                    <button id="buttonTak" type="button" class="btn btn-success" data-ng-click='odpTak()'>TAK</button>
+                    <button id="buttonNieWiem" type="button" class="btn btn-success"  data-ng-click='odpNieWiem()'>Nie wiem</button>
+                    <button id="buttonNie" type="button" class="btn btn-success" data-ng-click='odpNie()'>NIE</button>
+                </div>
             </div>
 
 
-
-            <!--           <a href="/logout"><button type="button" class="btn btn-lg btn-danger" >Wyloguj</button></a> -->
-        </div>
-
-
-
-        <!-- tabela graczy wraz z postaciami -->
-        <div id="postacie">
-            <h2 class="sub-header">Gracze: </h2>
-            <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Login</th>
-                            <th>Postać</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
+            <!-- przycisk potwierdzajacy gotowosc do gry -->
+            <div id="panelGotowosci"> 
+                <button type="button" class="btn btn-success" id = "gotowosc" >Start</button>
+            </div>
+            <!-- tabela graczy wraz z postaciami -->
+            <div id="postacie">
+                <h2 class="sub-header">Gracze: </h2>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Login</th>
+                                <th>Postać</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
+    <div id='panelAutor'>
+     <h2>Autor:</h2>
+     <p>Michał Skałkowski<br />
+         194916<br />
+         Grupa 1
+     </p>
+ </div>
+ <div id='panelOpis'>
+     <h1>Karteczki</h1>
+     <h3>Krótki opis</h3>
+     <p>Można zacząć grać od 2 osób. Aplikacja losuje każdemu po jednej postaci. Gracz widzi wszystkie postacie poza swoją.</p>
+     <p>Grę rozpoczyna pierwszy gracz, który się zalogował na serwerze. Zadaje pytanie, dotyczące własnej postaci, a następnie reszta graczy odpowiada na nie. Gracze odpowiadają równocześnie, mają do wyboru 3 odpowiedzi: "Tak", "Nie", lub "Nie wiem". Po odpowiedzeniu przez wszystkich, osoba pytająca, dostaje odpowiedź. Kolejna osoba w kolejce zadaje pytanie. Gra się kończy, aż jeden z zawodników odgadnie kim jest.</p>
+     <h3>Przykładowe pytania:</h3>
+     <ul>
+        <li>Czy jestem kobietą/mężczyzną?</li>
+        <li>Czy jestem postacią fikcyjną/realną? (np postać z bajki/polityk)</li>
+        <li>Czy grałem w filmie?</li>
+        <li>Czy jestem muzykiem?</li>
+        <li>Czy jestem sportowcem?</li>
+        <li>Czy mam więcej lat niż 50?</li>
+    </ul>
+
 </div>
-<div id='panelAutor'>
- <h2>Autor:</h2>
- <p>Michał Skałkowski <br />
-     194916<br />
-     Grupa 1
- </p>
-</div>
-<div id='panelOpis'>
- <h2>Opis:</h2>
- <p>Michał Skałkowski <br />
-     194916<br />
-     Grupa 1
- </p>
 </div>
 </body>
 </html>
